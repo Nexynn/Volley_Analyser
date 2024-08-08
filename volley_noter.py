@@ -74,7 +74,7 @@ class VolleyballApp(tk.Tk):
         increment_opponent_score = tk.Button(frame, text="+", command=lambda: self.update_score(self.opponent_score, 1))
         increment_opponent_score.grid(row=row, column=6, padx=(0, 10), pady=10, sticky='w')
 
-    def update_score(self, score_var, increment, is_reception_count = False):
+    def update_score(self, score_var, increment, is_reception_count=False):
         current_score = score_var.get()
         new_score = current_score + increment
         if new_score >= 0:  # Prevent negative scores
@@ -100,6 +100,9 @@ class VolleyballApp(tk.Tk):
             if set not in self.data[match]:
                 self.data[match][set] = {}
 
+            if not is_reception_count:
+                self.reception_count.set(0)
+
             
     def reset_actions(self, reset_service=False):
         match = self.get_match()
@@ -107,9 +110,9 @@ class VolleyballApp(tk.Tk):
         our_score = str(self.our_score.get())
         opponent_score = str(self.opponent_score.get())
         score = str(self.our_score.get()) + ":" + str(self.opponent_score.get())
-         
-        if score in self.data[match][set]:
-            print(score)
+        reception = self.get_reception_count()
+
+        if score in self.data[match][set] and reception in self.data[match][set][score]:
             self.block_combos[0].set(self.data[match][set][score]["block"]["name"])
             self.block_combos[1].set(self.data[match][set][score]["block"]["result"])
             self.block_combos[2].set(self.data[match][set][score]["block"]["target"])
@@ -137,7 +140,7 @@ class VolleyballApp(tk.Tk):
             self.attaque_combos[2].set("NULL")
 
         if reset_service:
-            if score in self.data[match][set]:
+            if score in self.data[match][set] and reception in self.data[match][set][score]:
                 self.service_combos[0].set(self.data[match][set][score]["service"]["name"])
                 self.service_combos[1].set(self.data[match][set][score]["service"]["result"])
                 self.service_combos[2].set(self.data[match][set][score]["service"]["target"])
@@ -207,6 +210,9 @@ class VolleyballApp(tk.Tk):
     def get_set(self):
         return self.set_combo.get()
 
+    def get_reception_count(self):
+        return self.reception_count.get()
+
     def get_action_data(self, action_combos):
         name = action_combos[0].get()
         result = action_combos[1].get()
@@ -223,16 +229,21 @@ class VolleyballApp(tk.Tk):
 
         score = str(self.our_score.get()) + ":" + str(self.opponent_score.get())
 
-        self.data[match][set][score] = {}
-        self.data[match][set][score]['reception_count'] = self.reception_count.get()
-        self.data[match][set][score]['service'] = self.get_action_data(self.service_combos)
-        self.data[match][set][score]['block'] = self.get_action_data(self.block_combos)
-        self.data[match][set][score]['reception'] = self.get_action_data(self.reception_combos)
-        self.data[match][set][score]['passe'] = self.get_action_data(self.passe_combos)
-        self.data[match][set][score]['attaque'] = self.get_action_data(self.attaque_combos)
+        if score not in self.data[match][set]:
+            self.data[match][set][score] = {}
+
+        reception = self.get_reception_count()
+        if reception not in self.data[match][set][score]:
+            self.data[match][set][score][reception] = {}
+
+        self.data[match][set][score][reception]['service'] = self.get_action_data(self.service_combos)
+        self.data[match][set][score][reception]['block'] = self.get_action_data(self.block_combos)
+        self.data[match][set][score][reception]['reception'] = self.get_action_data(self.reception_combos)
+        self.data[match][set][score][reception]['passe'] = self.get_action_data(self.passe_combos)
+        self.data[match][set][score][reception]['attaque'] = self.get_action_data(self.attaque_combos)
 
 
-        with open('volleyball_data.json', 'w') as file:
+        with open('sheet_volleyball_data.json', 'w') as file:
             json.dump(self.data, file, indent=4)
 
     def load_data(self):
