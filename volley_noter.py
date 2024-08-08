@@ -101,7 +101,7 @@ class VolleyballApp(tk.Tk):
                 self.data[match][set] = {}
 
             if not is_reception_count:
-                self.reception_count.set(0)
+                self.reception_count.set(1)
 
             
     def reset_actions(self, reset_service=False):
@@ -113,18 +113,18 @@ class VolleyballApp(tk.Tk):
         reception = self.get_reception_count()
 
         if score in self.data[match][set] and reception in self.data[match][set][score]:
-            self.block_combos[0].set(self.data[match][set][score]["block"]["name"])
-            self.block_combos[1].set(self.data[match][set][score]["block"]["result"])
-            self.block_combos[2].set(self.data[match][set][score]["block"]["target"])
-            self.reception_combos[0].set(self.data[match][set][score]["reception"]["name"])
-            self.reception_combos[1].set(self.data[match][set][score]["reception"]["result"])
-            self.reception_combos[2].set(self.data[match][set][score]["reception"]["target"])
-            self.passe_combos[0].set(self.data[match][set][score]["passe"]["name"])
-            self.passe_combos[1].set(self.data[match][set][score]["passe"]["result"])
-            self.passe_combos[2].set(self.data[match][set][score]["passe"]["target"])
-            self.attaque_combos[0].set(self.data[match][set][score]["attaque"]["name"])
-            self.attaque_combos[1].set(self.data[match][set][score]["attaque"]["result"])
-            self.attaque_combos[2].set(self.data[match][set][score]["attaque"]["target"])
+            self.block_combos[0].set(self.data[match][set][score]["Block"]["name"])
+            self.block_combos[1].set(self.data[match][set][score]["Block"]["result"])
+            self.block_combos[2].set(self.data[match][set][score]["Block"]["target"])
+            self.reception_combos[0].set(self.data[match][set][score]["Reception"]["name"])
+            self.reception_combos[1].set(self.data[match][set][score]["Reception"]["result"])
+            self.reception_combos[2].set(self.data[match][set][score]["Reception"]["target"])
+            self.passe_combos[0].set(self.data[match][set][score]["Passe"]["name"])
+            self.passe_combos[1].set(self.data[match][set][score]["Passe"]["result"])
+            self.passe_combos[2].set(self.data[match][set][score]["Passe"]["target"])
+            self.attaque_combos[0].set(self.data[match][set][score]["Attaque"]["name"])
+            self.attaque_combos[1].set(self.data[match][set][score]["Attaque"]["result"])
+            self.attaque_combos[2].set(self.data[match][set][score]["Attaque"]["target"])
         else:
             self.block_combos[0].set("NULL")
             self.block_combos[1].set("NULL")
@@ -141,9 +141,9 @@ class VolleyballApp(tk.Tk):
 
         if reset_service:
             if score in self.data[match][set] and reception in self.data[match][set][score]:
-                self.service_combos[0].set(self.data[match][set][score]["service"]["name"])
-                self.service_combos[1].set(self.data[match][set][score]["service"]["result"])
-                self.service_combos[2].set(self.data[match][set][score]["service"]["target"])
+                self.service_combos[0].set(self.data[match][set][score]["Service"]["name"])
+                self.service_combos[1].set(self.data[match][set][score]["Service"]["result"])
+                self.service_combos[2].set(self.data[match][set][score]["Service"]["target"])
             else:
                 self.service_combos[0].set("NULL")
                 self.service_combos[1].set("NULL")
@@ -232,15 +232,16 @@ class VolleyballApp(tk.Tk):
         if score not in self.data[match][set]:
             self.data[match][set][score] = {}
 
+        self.data[match][set][score]['Service'] = self.get_action_data(self.service_combos)
+        
         reception = self.get_reception_count()
         if reception not in self.data[match][set][score]:
             self.data[match][set][score][reception] = {}
 
-        self.data[match][set][score][reception]['service'] = self.get_action_data(self.service_combos)
-        self.data[match][set][score][reception]['block'] = self.get_action_data(self.block_combos)
-        self.data[match][set][score][reception]['reception'] = self.get_action_data(self.reception_combos)
-        self.data[match][set][score][reception]['passe'] = self.get_action_data(self.passe_combos)
-        self.data[match][set][score][reception]['attaque'] = self.get_action_data(self.attaque_combos)
+        self.data[match][set][score][reception]['Block'] = self.get_action_data(self.block_combos)
+        self.data[match][set][score][reception]['Reception'] = self.get_action_data(self.reception_combos)
+        self.data[match][set][score][reception]['Passe'] = self.get_action_data(self.passe_combos)
+        self.data[match][set][score][reception]['Attaque'] = self.get_action_data(self.attaque_combos)
 
 
         with open('sheet_volleyball_data.json', 'w') as file:
