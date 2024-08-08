@@ -65,6 +65,41 @@ def evaluate_collective_score(previous_result, current_result, current_action):
     
     return convert_result_to_score(current_result)
 
+def save():
+    # Convertir les statistiques en DataFrame
+    stats_df = pd.DataFrame.from_dict(stats, orient='index').reset_index().rename(columns={'index': 'Name'})
+    scores_df = pd.DataFrame.from_dict(scores, orient='index').reset_index().rename(columns={'index': 'Name'})
+    collective_scores_df = pd.DataFrame.from_dict(collective_scores, orient='index').reset_index().rename(columns={'index': 'Name'})
+
+    # Lire le fichier Excel existant
+    excel_path = 'excel_volleyball_stats.xlsx'
+
+    try:
+        # Lire les feuilles existantes
+        existing_data = pd.read_excel(excel_path, sheet_name=None)
+    
+        # Calculer la nouvelle position de départ (2 lignes en dessous des données existantes)
+        new_startrow_stats = existing_data['Statistiques'].shape[0] + 2
+        new_startrow_scores = existing_data['Scores'].shape[0] + 2
+        new_startrow_collective = existing_data['Collective Scores'].shape[0] + 2
+    
+        with pd.ExcelWriter(excel_path, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+            # Écrire les nouvelles données deux lignes en dessous des données existantes
+            stats_df.to_excel(writer, sheet_name='Statistiques', index=False, startrow=new_startrow_stats, header=False)
+            scores_df.to_excel(writer, sheet_name='Scores', index=False, startrow=new_startrow_scores, header=False)
+            collective_scores_df.to_excel(writer, sheet_name='Collective Scores', index=False, startrow=new_startrow_collective, header=False)
+        
+    except FileNotFoundError:
+        # Si le fichier n'existe pas, créer un nouveau fichier et y écrire les données
+        with pd.ExcelWriter(excel_path) as writer:
+            stats_df.to_excel(writer, sheet_name='Statistiques', index=False)
+            scores_df.to_excel(writer, sheet_name='Scores', index=False)
+            collective_scores_df.to_excel(writer, sheet_name='Collective Scores', index=False)
+    stats.clear()
+    scores.clear()
+    collective_scores.clear()
+
+
 # Parcourir les données JSON pour collecter les statistiques
 for match, sets in data.items():
     for set_num, points in sets.items():
@@ -84,7 +119,6 @@ for match, sets in data.items():
                         
                 elif isinstance(details, dict):
                     for sub_action, sub_details in details.items():
-                        print(sub_details)
                         if sub_details["name"] != "NULL":
                             if sub_details["name"] not in stats:
                                 stats[sub_details["name"]] = {"Service": 0, "Reception": 0, "Passe": 0, "Attaque": 0, "Block": 0}
@@ -105,37 +139,8 @@ for match, sets in data.items():
                                 if (sub_action == "Reception"):
                                     previous_results["Reception"] = sub_details["result"]
                                 collective_scores[sub_details["name"]][sub_action] += convert_result_to_score(sub_details["result"], sub_action)
+        save()
 
 
-# Convertir les statistiques en DataFrame
-stats_df = pd.DataFrame.from_dict(stats, orient='index').reset_index().rename(columns={'index': 'Name'})
-scores_df = pd.DataFrame.from_dict(scores, orient='index').reset_index().rename(columns={'index': 'Name'})
-collective_scores_df = pd.DataFrame.from_dict(collective_scores, orient='index').reset_index().rename(columns={'index': 'Name'})
-
-# Lire le fichier Excel existant
-excel_path = 'volleyball_stats.xlsx'
-
-try:
-    with pd.ExcelWriter(excel_path, engine='openpyxl', mode='a') as writer:
-        # Lire les feuilles existantes
-        existing_data = pd.read_excel(writer.path, sheet_name=None)
-        
-        # Calculer la nouvelle position de départ (2 lignes en dessous des données existantes)
-        new_startrow_stats = existing_data['Statistiques'].shape[0] + 2
-        new_startrow_scores = existing_data['Scores'].shape[0] + 2
-        new_startrow_collective = existing_data['Collective Scores'].shape[0] + 2
-        
-        # Écrire les nouvelles données deux lignes en dessous des données existantes
-        stats_df.to_excel(writer, sheet_name='Statistiques', index=False, startrow=new_startrow_stats)
-        scores_df.to_excel(writer, sheet_name='Scores', index=False, startrow=new_startrow_scores)
-        collective_scores_df.to_excel(writer, sheet_name='Collective Scores', index=False, startrow=new_startrow_collective)
-        
-except FileNotFoundError:
-    # Si le fichier n'existe pas, créer un nouveau fichier et y écrire les données
-    with pd.ExcelWriter(excel_path) as writer:
-        stats_df.to_excel(writer, sheet_name='Statistiques', index=False)
-        scores_df.to_excel(writer, sheet_name='Scores', index=False)
-        collective_scores_df.to_excel(writer, sheet_name='Collective Scores', index=False)
-
-print("Les statistiques ont été exportées vers volleyball_stats.xlsx")
+print("Les statistiques ont été exportées vers excel_volleyball_stats.xlsx")
 
